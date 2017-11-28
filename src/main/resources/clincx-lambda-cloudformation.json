@@ -1,0 +1,115 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description":"Build CLINCX Lambda functions for API Gateway Integration",
+  "Mappings" : {
+    "RegionMap" : {
+      "us-west-2" : { "S3Bucket" : "ghx-deployment-devtest", "S3Key" : "UNSPSC/develop/clinicalconnexion-api-gateway-0.0.1-SNAPSHOT.jar", 
+                      "role" : "lambda_s3_vpc_execution", "SecurityGroupIds": [ "sg-06f6e964" ], "SubnetIds": [ "subnet-72c7d206","subnet-3b192d7d","subnet-821aefe7" ]},
+
+      "us-east-1" : { "S3Bucket" : "ghx-deployment-devtest", "S3Key" : "UNSPSC/develop/clinicalconnexion-api-gateway-0.0.1-SNAPSHOT.jar", 
+                      "role" : "clincx-lambda", "SecurityGroupIds": [ "sg-321d1254", "sg-8de6b6e9", "sg-f525388e" ], "SubnetIds": [ "subnet-823841b8","subnet-86f3a5ae","subnet-9bcafcdd" ]}
+    }
+  },
+  "Resources" : {
+      "CLINCXCatalogFacet": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Bucket"]},
+            "S3Key": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Key"]}
+          },
+          "Description" : "Return unique Mfg Names/Vendor Names/Nouns from the catalog",
+          "FunctionName" : "clincx_catalog_facet_java",
+          "Handler": "com.ghx.cc.api.catalog.CatalogFacet::handleRequest",
+          "MemorySize" : 128,
+          "Role": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/", { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "role"]}]]},
+          "Runtime": "java8",
+          "Timeout": "120",
+          "VpcConfig": {
+            "SecurityGroupIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SecurityGroupIds"]},
+            "SubnetIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SubnetIds"]}
+          }
+        }
+      },
+      "CLINCXCatalogContracts": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Bucket"]},
+            "S3Key": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Key"]}
+          },
+          "Description" : "Return unique Contract Num and Contract Name from the catalog",
+          "FunctionName" : "clincx_catalog_contracts_java",
+          "Handler": "com.ghx.cc.api.catalog.CatalogContract::handleRequest",
+          "MemorySize" : 128,
+          "Role": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/", { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "role"]}]]},
+          "Runtime": "java8",
+          "Timeout": "120",
+          "VpcConfig": {
+            "SecurityGroupIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SecurityGroupIds"]},
+            "SubnetIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SubnetIds"]}
+          }
+        }
+      },
+      "CLINCXCatalogSearch": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Bucket"]},
+            "S3Key": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Key"]}
+          },
+          "Description" : "Catalog item search",
+          "FunctionName" : "clincx_catalog_search_java",
+          "Handler": "com.ghx.cc.api.catalog.CatalogSearch::handleRequest",
+          "MemorySize" : 128,
+          "Role": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/", { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "role"]}]]},
+          "Runtime": "java8",
+          "Timeout": "120",
+          "VpcConfig": {
+            "SecurityGroupIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SecurityGroupIds"]},
+            "SubnetIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SubnetIds"]}
+          }
+        }
+      },
+      "CLINCXCatalogItemDetails": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Bucket"]},
+            "S3Key": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Key"]}
+          },
+          "Description" : "Return item details with the provided item key",
+          "FunctionName" : "clincx_catalog_item_details_java",
+          "Handler": "com.ghx.cc.api.catalog.CatalogItemDetails::handleRequest",
+          "MemorySize" : 128,
+          "Role": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/", { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "role"]}]]},
+          "Runtime": "java8",
+          "Timeout": "120",
+          "VpcConfig": {
+            "SecurityGroupIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SecurityGroupIds"]},
+            "SubnetIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SubnetIds"]}
+          }
+        }
+      },
+    "CLINCXFlowStatus": {
+      "Type": "AWS::Lambda::Function",
+      "Properties": {
+        "Code": {
+          "S3Bucket": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Bucket"]},
+          "S3Key": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Key"]}
+        },
+        "Description" : "Return global content flow status details",
+        "FunctionName" : "clincx_flow_status_java",
+        "Handler": "com.ghx.cc.api.flowstatus.FlowStatusSearch::handleRequest",
+        "MemorySize" : 128,
+        "Role": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/", { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "role"]}]]},
+        "Runtime": "java8",
+        "Timeout": "120",
+        "VpcConfig": {
+          "SecurityGroupIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SecurityGroupIds"]},
+          "SubnetIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SubnetIds"]}
+        }
+      }
+    }
+  }
+}

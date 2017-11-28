@@ -1,0 +1,19 @@
+#
+# Eclipse
+#
+.settings
+.classpath
+.project
+
+#
+# IntelliJ Idea
+#
+.idea
+*.iml
+
+#
+# Maven
+#
+site
+target
+test-output

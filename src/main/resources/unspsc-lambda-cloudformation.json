@@ -1,0 +1,75 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description":"Build UNSPSC Lambda functions for API Gateway Integration",
+  "Mappings" : {
+    "RegionMap" : {
+      "us-west-2" : { "S3Bucket" : "ghx-deployment-devtest", "S3Key" : "UNSPSC/develop/clinicalconnexion-api-gateway-0.0.1-SNAPSHOT.jar", 
+                      "role" : "lambda_s3_vpc_execution", "SecurityGroupIds": [ "sg-06f6e964" ], "SubnetIds": [ "subnet-72c7d206","subnet-3b192d7d","subnet-821aefe7" ]},
+
+      "us-east-1" : { "S3Bucket" : "ghx-deployment-devtest", "S3Key" : "UNSPSC/develop/clinicalconnexion-api-gateway-0.0.1-SNAPSHOT.jar", 
+                      "role" : "clincx-lambda", "SecurityGroupIds": [ "sg-321d1254", "sg-8de6b6e9", "sg-f525388e" ], "SubnetIds": [ "subnet-823841b8","subnet-86f3a5ae","subnet-9bcafcdd" ]}
+    }
+  },
+  "Resources" : {
+      "UNSPSCSegments": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Bucket"]},
+            "S3Key": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Key"]}
+          },
+          "Description" : "Return all UNSPSC segments",
+          "FunctionName" : "unspsc_segments_java",
+          "Handler": "com.ghx.cc.api.unspsc.UNSPSCSegment::handleRequest",
+          "MemorySize" : 128,
+          "Role": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/", { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "role"]}]]},
+          "Runtime": "java8",
+          "Timeout": "120",
+          "VpcConfig": { 
+            "SecurityGroupIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SecurityGroupIds"]},
+            "SubnetIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SubnetIds"]}
+          }
+        }
+      },
+      "UNSPSCChildren": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Bucket"]},
+            "S3Key": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Key"]}
+          },
+          "Description" : "Return children of the given parent UNSPSC code",
+          "FunctionName" : "unspsc_children_java",
+          "Handler": "com.ghx.cc.api.unspsc.UNSPSCChildren::handleRequest",
+          "MemorySize" : 128,
+          "Role": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/", { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "role"]}]]},
+          "Runtime": "java8",
+          "Timeout": "120",
+          "VpcConfig": { 
+            "SecurityGroupIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SecurityGroupIds"]},
+            "SubnetIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SubnetIds"]}
+          }
+        }
+      },
+      "UNSPSCSearch": {
+        "Type": "AWS::Lambda::Function",
+        "Properties": {
+          "Code": {
+            "S3Bucket": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Bucket"]},
+            "S3Key": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "S3Key"]}
+          },
+          "Description" : "Return UNSPSC codes by level,code/description",
+          "FunctionName" : "unspsc_search_java",
+          "Handler": "com.ghx.cc.api.unspsc.UNSPSCSearch::handleRequest",
+          "MemorySize" : 128,
+          "Role": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/", { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "role"]}]]},
+          "Runtime": "java8",
+          "Timeout": "120",
+          "VpcConfig": { 
+            "SecurityGroupIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SecurityGroupIds"]},
+            "SubnetIds": { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "SubnetIds"]}
+          }
+        }
+      }
+  }
+}

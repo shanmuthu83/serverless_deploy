@@ -1,0 +1,686 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description":"Clinical ConneXion API",
+  "Resources" : {
+      "ClinCxApi": {
+        "Type": "AWS::ApiGateway::RestApi",
+        "Properties": {
+          "Name": "clincx",
+          "Description": "Clinical ConneXion API",
+          "FailOnWarnings": true,
+          "Body": {
+                "swagger": "2.0",
+                "info": {
+                  "version": "1.0",
+                  "title": "clincx",
+                  "description": "Clinical ConneXion API"
+                },
+                "schemes": [
+                  "https"
+                ],
+                "paths": {
+                  "/clincx/v1/contract/search": {
+                    "post": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\",\n    \"source\": \"catalog\",\n\"body\" : $input.json('$')\n}\n"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:clincx_catalog_contracts_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/clincx/v1/exportFilter": {
+                    "put": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "#set($inputRoot = $input.path('$'))\n#set($inputOrgEID = $inputRoot.orgEID)\n#set($inputMyItemsFilter = $inputRoot.myItemsJsonFilter)\n#set($inputAspFilter = $inputRoot.aspJsonFilter)\n\n#set($table = \"CLINCX_ORG_EXPORT_FILTER_$context.stage.toUpperCase()\")\n\n{\n    \"TableName\": \"$table\",\n    \"Key\": {\n        \"ORG_EID\": {\n            \"S\": \"$inputOrgEID\"\n        }\n    },\n    \n    #if($inputMyItemsFilter == \"\")\n        \"UpdateExpression\": \"set ASP_JSON_FILTER = :asp_filter\",\n        \"ExpressionAttributeValues\": {\n            \":asp_filter\": {\"S\": \"$util.escapeJavaScript($inputAspFilter)\"}\n        }\n    #elseif($inputAspFilter == \"\")\n        \"UpdateExpression\": \"set MY_ITEMS_JSON_FILTER = :my_items_filter\",\n        \"ExpressionAttributeValues\": {\n            \":my_items_filter\": {\"S\": \"$util.escapeJavaScript($inputMyItemsFilter)\"}\n        }\n    #else\n        \"UpdateExpression\": \"set MY_ITEMS_JSON_FILTER = :my_items_filter, ASP_JSON_FILTER = :asp_filter\",\n        \"ExpressionAttributeValues\": {\n            \":my_items_filter\": {\"S\": \"$util.escapeJavaScript($inputMyItemsFilter)\"},\n            \":asp_filter\": {\"S\": \"$util.escapeJavaScript($inputAspFilter)\"}\n        }\n    #end\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":dynamodb:action/UpdateItem"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/clincx/v1/exportFilter/{orgEID}": {
+                    "get": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "parameters": [
+                        {
+                          "name": "orgEID",
+                          "in": "path",
+                          "required": true,
+                          "type": "string"
+                        }
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "responses": {
+                          "default": {
+                            "statusCode": "200",
+                            "responseTemplates": {
+                              "application/json": "#set($inputRoot = $input.path('$.Item'))\n\n{\"orgEID\": \"$inputRoot.ORG_EID.S\",\n\"myItemsJsonFilter\": \"$util.escapeJavaScript($inputRoot.MY_ITEMS_JSON_FILTER.S)\",\n\"aspJsonFilter\": \"$util.escapeJavaScript($inputRoot.ASP_JSON_FILTER.S)\"\n}\n"
+                            }
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "#set($table = \"CLINCX_ORG_EXPORT_FILTER_$context.stage.toUpperCase()\")\n\n{\n    \"TableName\": \"$table\",\n    \"Key\": {\n        \"ORG_EID\": {\n            \"S\": \"$input.params('orgEID')\"\n        }\n    },\n    \"ConsistentRead\": true\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":dynamodb:action/GetItem"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/clincx/v1/item/override": {
+                    "put": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":dynamodb:action/PutItem"]]},
+                        "requestTemplates": {
+                          "application/json": "#set($inputRoot = $input.path('$'))\n\n{\n    \"TableName\": \"CLINCX_CATALOG_OVERRIDE_$context.stage.toUpperCase()\",\n    \"Item\": {\n                \"CLINCX_ITEM_KEY\": {\n                    \"S\": \"$inputRoot.clincx_item_key\"\n                }\n                #if($inputRoot.uom_price != \"\")\n                    ,\"UOM_PRICE\": {\n                        \"S\": \"$inputRoot.uom_price\"\n                    }\n                #end\n                #if($inputRoot.unit_price != \"\")\n                    ,\"UNIT_PRICE\": {\n                        \"S\": \"$inputRoot.unit_price\"\n                    }\n                #end\n                #if($inputRoot.ghx_hcpcs_code != \"\")\n                    ,\"GHX_HCPCS_CODE\": {\n                        \"S\": \"$inputRoot.ghx_hcpcs_code\"\n                    }\n                #end\n                #if($inputRoot.ghx_revenue_code != \"\")\n                    ,\"GHX_REVENUE_CODE\": {\n                        \"S\": \"$inputRoot.ghx_revenue_code\"\n                    }\n                #end\n                #if($inputRoot.charge_code != \"\")\n                    ,\"CHARGE_CODE\": {\n                        \"S\": \"$inputRoot.charge_code\"\n                    }\n                #end\n                #if($inputRoot.billable_flag != \"\")\n                    ,\"BILLABLE_FLAG\": {\n                        \"S\": \"$inputRoot.billable_flag\"\n                    }\n                #end\n                #if($inputRoot.qoe != \"\")\n                    ,\"QOE\": {\n                        \"S\": \"$inputRoot.qoe\"\n                    }\n                #end\n                #if($inputRoot.file_eid != \"\")\n                    ,\"FILE_EID\": {\n                        \"S\": \"$inputRoot.file_eid\"\n                    }\n                #end\n                #if($inputRoot.idn_eid != \"\")\n                    ,\"IDN_EID\": {\n                        \"S\": \"$inputRoot.idn_eid\"\n                    }\n                #end\n                #if($inputRoot.user_name != \"\")\n                    ,\"USER_NAME\": {\n                        \"S\": \"$inputRoot.user_name\"\n                    }\n                #end\n                    #if($inputRoot.user_email != \"\")\n                    ,\"USER_EMAIL\": {\n                        \"S\": \"$inputRoot.user_email\"\n                    }\n                #end\n                    #if($inputRoot.time_stamp != \"\")\n                    ,\"TIME_STAMP\": {\n                        \"S\": \"$inputRoot.time_stamp\"\n                    }\n                #end\n            }\n }"
+                        },
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/clincx/v1/item/override/{clincxItemKey}": {
+                    "get": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "parameters": [
+                        {
+                          "name": "clincxItemKey",
+                          "in": "path",
+                          "required": true,
+                          "type": "string"
+                        }
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "responses": {
+                          "default": {
+                            "statusCode": "200",
+                            "responseTemplates": {
+                              "application/json": "#set($inputRoot = $input.path('$.Item'))\n\n{\"clincx_item_key\": \"$inputRoot.CLINCX_ITEM_KEY.S\",\n \"uom_price\": \"$inputRoot.UOM_PRICE.S\",\n \"unit_price\": \"$inputRoot.UNIT_PRICE.S\",\n \"ghx_hcpcs_code\": \"$inputRoot.GHX_HCPCS_CODE.S\",\n \"ghx_revenue_code\": \"$inputRoot.GHX_REVENUE_CODE.S\",\n \"charge_code\": \"$inputRoot.CHARGE_CODE.S\",\n \"billable_flag\": \"$inputRoot.BILLABLE_FLAG.S\",\n \"qoe\": \"$inputRoot.QOE.S\"\n}"
+                            }
+                          }
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":dynamodb:action/GetItem"]]},
+                        "requestTemplates": {
+                          "application/json": "{\n    \"TableName\": \"CLINCX_CATALOG_OVERRIDE_$context.stage.toUpperCase()\",\n    \"Key\": {\n        \"CLINCX_ITEM_KEY\": {\n            \"S\": \"$input.params('clincxItemKey')\"\n        }\n    },\n    \"ConsistentRead\": true\n}"
+                        },
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "type": "aws"
+                      }
+                    },
+                    "delete": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "parameters": [
+                        {
+                          "name": "clincxItemKey",
+                          "in": "path",
+                          "required": true,
+                          "type": "string"
+                        }
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":dynamodb:action/DeleteItem"]]},
+                        "requestTemplates": {
+                          "application/json": "{\n    \"TableName\": \"CLINCX_CATALOG_OVERRIDE_$context.stage.toUpperCase()\",\n    \"Key\": {\n        \"CLINCX_ITEM_KEY\": {\n            \"S\": \"$input.params('clincxItemKey')\"\n        }\n    } \n}"
+                        },
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/clincx/v1/item/search": {
+                    "post": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\",\n    \"source\": \"catalog\",\n    \"body\" : $input.json('$')\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:clincx_catalog_search_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/clincx/v1/non-discerned/item/search": {
+                    "post": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\",\n    \"source\": \"catalog-non-discerned\",\n    \"body\" : $input.json('$')\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:clincx_catalog_search_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/clincx/v1/item/{clincxItemKey}": {
+                    "get": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "parameters": [
+                        {
+                          "name": "clincxItemKey",
+                          "in": "path",
+                          "required": true,
+                          "type": "string"
+                        }
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\",\n    \"clincx_item_key\": \"$input.params('clincxItemKey')\"\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:clincx_catalog_item_details_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/clincx/v1/{field}": {
+                    "post": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "parameters": [
+                        {
+                          "name": "field",
+                          "in": "path",
+                          "required": true,
+                          "type": "string"
+                        }
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\",\n    \"field\": \"$input.params('field')\",\n    \"source\": \"catalog\",\n    \"body\" : $input.json('$')\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:clincx_catalog_facet_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/clincx/v1/non-discerned/{field}": {
+                    "post": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "parameters": [
+                        {
+                          "name": "field",
+                          "in": "path",
+                          "required": true,
+                          "type": "string"
+                        }
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\",\n    \"field\": \"$input.params('field')\",\n    \"source\": \"catalog-non-discerned\",\n    \"body\" : $input.json('$')\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:clincx_catalog_facet_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/clincx/v1/admin/flowstatus": {
+                    "post": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\",\n    \"source\": \"flow-status-gc\",\n    \"body\" : $input.json('$')\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:clincx_flow_status_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/asp/v1/exportFilter": {
+                    "put": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "#set($inputRoot = $input.path('$'))\n#set($inputOrgEID = $inputRoot.orgEID)\n#set($inputMyItemsFilter = $inputRoot.myItemsJsonFilter)\n#set($inputAspFilter = $inputRoot.aspJsonFilter)\n\n#set($table = \"CLINCX_ORG_EXPORT_FILTER_$context.stage.toUpperCase()\")\n\n{\n    \"TableName\": \"$table\",\n    \"Key\": {\n        \"ORG_EID\": {\n            \"S\": \"$inputOrgEID\"\n        }\n    },\n    \n    #if($inputMyItemsFilter == \"\")\n        \"UpdateExpression\": \"set ASP_JSON_FILTER = :asp_filter\",\n        \"ExpressionAttributeValues\": {\n            \":asp_filter\": {\"S\": \"$util.escapeJavaScript($inputAspFilter)\"}\n        }\n    #elseif($inputAspFilter == \"\")\n        \"UpdateExpression\": \"set MY_ITEMS_JSON_FILTER = :my_items_filter\",\n        \"ExpressionAttributeValues\": {\n            \":my_items_filter\": {\"S\": \"$util.escapeJavaScript($inputMyItemsFilter)\"}\n        }\n    #else\n        \"UpdateExpression\": \"set MY_ITEMS_JSON_FILTER = :my_items_filter, ASP_JSON_FILTER = :asp_filter\",\n        \"ExpressionAttributeValues\": {\n            \":my_items_filter\": {\"S\": \"$util.escapeJavaScript($inputMyItemsFilter)\"},\n            \":asp_filter\": {\"S\": \"$util.escapeJavaScript($inputAspFilter)\"}\n        }\n    #end\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":dynamodb:action/UpdateItem"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/asp/v1/item/search": {
+                    "post": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\",\n    \"source\": \"asp\",\n    \"body\" : $input.json('$')\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:clincx_catalog_search_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/asp/v1/{field}": {
+                    "post": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "parameters": [
+                        {
+                          "name": "field",
+                          "in": "path",
+                          "required": true,
+                          "type": "string"
+                        }
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\",\n    \"field\": \"$input.params('field')\",\n    \"source\": \"asp\",\n    \"body\" : $input.json('$')\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:clincx_catalog_facet_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  }
+                },
+                "securityDefinitions": {
+                  "sso-authentication": {
+                    "type": "apiKey",
+                    "name": "Authorization",
+                    "in": "header",
+                    "x-amazon-apigateway-authtype": "custom",
+                    "x-amazon-apigateway-authorizer": {
+                      "authorizerUri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:clincx_sso"]]}, "/invocations"]]},
+                      "authorizerResultTtlInSeconds": 0,
+                      "authorizerCredentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                      "type": "token"
+                    }
+                  }
+                },
+                "definitions": {
+                  "Empty": {
+                    "type": "object",
+                    "title": "Empty Schema"
+                  }
+                }
+            }
+        }
+      }
+  }
+}       

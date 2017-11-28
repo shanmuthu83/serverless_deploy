@@ -1,0 +1,201 @@
+{
+  "AWSTemplateFormatVersion" : "2010-09-09",
+  "Description":"UNSPSC API",
+  "Resources" : {
+      "ClinCxApi": {
+        "Type": "AWS::ApiGateway::RestApi",
+        "Properties": {
+          "Name": "unspsc",
+          "Description": "UNSPSC API",
+          "FailOnWarnings": true,
+          "Body": {
+                "swagger": "2.0",
+                "info": {
+                  "version": "1.0",
+                  "title": "unspsc",
+                  "description": "UNSPSC API"
+                },
+                "schemes": [
+                  "https"
+                ],
+                "paths": {
+                  "/unspsc/v1/segments": {
+                    "get": {
+                      "produces": [
+                        "application/json"
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\"\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:unspsc_segments_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_match",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/unspsc/v1/{parent}/children": {
+                    "get": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "parameters": [
+                        {
+                          "name": "parent",
+                          "in": "path",
+                          "required": true,
+                          "type": "string"
+                        }
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\",\n   \"parent\": \"$input.params('parent')\"\n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:unspsc_children_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  },
+                  "/unspsc/v1/search/{onField}": {
+                    "get": {
+                      "consumes": [
+                        "application/json"
+                      ],
+                      "produces": [
+                        "application/json"
+                      ],
+                      "parameters": [
+                        {
+                          "name": "onField",
+                          "in": "path",
+                          "required": true,
+                          "type": "string"
+                        },
+                        {
+                          "name": "query",
+                          "in": "query",
+                          "required": true,
+                          "type": "string"
+                        },
+                        {
+                          "name": "level",
+                          "in": "query",
+                          "required": true,
+                          "type": "integer"
+                        },
+                        {
+                          "name": "from",
+                          "in": "query",
+                          "required": false,
+                          "type": "integer"
+                        },
+                        {
+                          "name": "size",
+                          "in": "query",
+                          "required": false,
+                          "type": "integer"
+                        }
+                      ],
+                      "responses": {
+                        "200": {
+                          "description": "200 response",
+                          "schema": {
+                            "$ref": "#/definitions/Empty"
+                          }
+                        }
+                      },
+                      "security": [
+                        {
+                          "sso-authentication": []
+                        }
+                      ],
+                      "x-amazon-apigateway-integration": {
+                        "responses": {
+                          "default": {
+                            "statusCode": "200"
+                          }
+                        },
+                        "requestTemplates": {
+                          "application/json": "{\n    \"stage\": \"$context.stage\",\n   \"onField\": \"$input.params('onField')\",\n   \"level\": $input.params('level'),\n   #if($input.params('from') != \"\")\n        \"from\": $input.params('from'),\n   #end\n   #if($input.params('size') != \"\")\n        \"size\": $input.params('size'),\n   #end\n    \"query\": \"$util.escapeJavaScript($input.params('query'))\"  \n}"
+                        },
+                        "uri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:unspsc_search_java"]]}, "/invocations"]]},
+                        "passthroughBehavior": "when_no_templates",
+                        "httpMethod": "POST",
+                        "credentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                        "contentHandling": "CONVERT_TO_TEXT",
+                        "type": "aws"
+                      }
+                    }
+                  }
+                },
+                "securityDefinitions": {
+                  "sso-authentication": {
+                    "type": "apiKey",
+                    "name": "Authorization",
+                    "in": "header",
+                    "x-amazon-apigateway-authtype": "custom",
+                    "x-amazon-apigateway-authorizer": {
+                      "authorizerUri": {"Fn::Join": ["",["arn:aws:apigateway:", {"Ref": "AWS::Region"}, ":lambda:path/2015-03-31/functions/", { "Fn::Join":[ "", ["arn:aws:lambda:", { "Ref" : "AWS::Region" }, ":", { "Ref" : "AWS::AccountId" }, ":function:clincx_sso"]]}, "/invocations"]]},
+                      "authorizerResultTtlInSeconds": 0,
+                      "authorizerCredentials": {"Fn::Join": ["",["arn:aws:iam::", {"Ref": "AWS::AccountId"}, ":role/clincx-gateway-awsservices"]]},
+                      "type": "token"
+                    }
+                  }
+                },
+                "definitions": {
+                  "Empty": {
+                    "type": "object",
+                    "title": "Empty Schema"
+                  }
+                }
+            }
+        }
+      }
+  }
+}       
