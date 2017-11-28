@@ -1,4 +1,4 @@
-package com.ghx.cc.api.admin.user;
+package com.test.api.admin.user;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -9,8 +9,8 @@ import org.codehaus.jackson.map.ObjectMapper;
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.ghx.cc.api.admin.user.dao.UserDao;
-import com.ghx.cc.api.admin.user.req.data.UserRequest;
+import com.test.api.admin.user.dao.UserDao;
+import com.test.api.admin.user.req.data.UserRequest;
 
 public class User implements RequestStreamHandler {
 

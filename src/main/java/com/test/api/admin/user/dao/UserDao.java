@@ -1,4 +1,4 @@
-package com.ghx.cc.api.admin.user.dao;
+package com.test.api.admin.user.dao;
 
 import java.util.List;
 import java.util.Map;
@@ -25,8 +25,8 @@ import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.ghx.cc.api.config.PropertyLoader;
 import com.google.common.collect.Maps;
+import com.test.api.config.PropertyLoader;
 
 public class UserDao {
 

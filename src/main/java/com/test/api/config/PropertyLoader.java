@@ -1,4 +1,4 @@
-package com.ghx.cc.api.config;
+package com.test.api.config;
 
 import java.io.IOException;
 import java.util.Properties;

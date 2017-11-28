@@ -1,4 +1,4 @@
-package com.ghx.cc.api.admin.user.req.data;
+package com.test.api.admin.user.req.data;
 
 import lombok.Data;
 import lombok.ToString;
