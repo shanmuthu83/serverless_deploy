@@ -3,13 +3,14 @@ package com.test.api.admin.user;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.codehaus.jackson.map.ObjectMapper;
 
 import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.RequestStreamHandler;
-import com.test.api.admin.user.dao.UserDao;
 import com.test.api.admin.user.req.data.UserRequest;
 
 public class User implements RequestStreamHandler {
@@ -21,15 +22,23 @@ public class User implements RequestStreamHandler {
 
 		UserRequest request = mapper.readValue(input, UserRequest.class);
 
-		UserDao dao = new UserDao(context, request.getStage());
 		Object data = null;
-		
+
 		if (request.getField().equalsIgnoreCase("eid")) {
-			data = dao.getUserEid(request.getOrgId());
+			data = getAllUsers();
 		} else if (request.getField().equalsIgnoreCase("all")) {
-			data = dao.getAllUsers(request.getSearchText(), request.getPageNum(), request.getPageSize());
+			data = getAllUsers();
 		}
-		
+
 		mapper.writeValue(output, data);
+	}
+
+	private Map<String, Object> getAllUsers() {
+		Map<String, Object> users = new HashMap<String, Object>();
+		users.put("id", "123");
+		users.put("firstName", "MyUser");
+		users.put("lastName", "SystemAdmin");
+		users.put("userName", "sysadmin@test.com");
+		return users;
 	}
 }
