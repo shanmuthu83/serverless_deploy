@@ -7,7 +7,7 @@ Resources:
     Properties:
       Handler: 'com.test.api.admin.user.User::handleRequest'
       Runtime: java8
-      CodeUri: 's3://ghx-deployment-or/Clinical-Connexion/api-gateway-lambda/smi/serverless_app/target/serverless-app-*.jar'
+      CodeUri: 's3://ghx-deployment-or/Clinical-Connexion/api-gateway-lambda/smi/serverless_app/serverless-app-0.0.1-SNAPSHOT.jar'
       Description: ''
       MemorySize: 512
       Timeout: 300
