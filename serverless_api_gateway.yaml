@@ -1,0 +1,32 @@
+﻿AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: An AWS Serverless Specification template describing your function.
+Resources:
+  serverlessuser:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: 'com.test.api.admin.user.User::handleRequest'
+      Runtime: java8
+      CodeUri: 's3://ghx-deployment-or/Clinical-Connexion/api-gateway-lambda/smi/serverless_app/target/serverless-app-*.jar'
+      Description: ''
+      MemorySize: 512
+      Timeout: 300
+      Role: 'arn:aws:iam::050190852521:role/lambda_s3_vpc_execution'
+      Events:
+        Api1:
+          Type: Api
+          Properties:
+            Path: '/clincx/v1/user/{field}'
+            Method: POST
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-c58bdfb8
+        SubnetIds:
+          - subnet-72c7d206
+          - subnet-821aefe7
+          - subnet-3b192d7d
+  serverlessapi:
+   Type: AWS::Serverless::Api
+   Properties:
+      StageName: dev
+      DefinitionUri: 's3://ghx-deployment-or/Clinical-Connexion/api-gateway-lambda/smi/serverless_app/clincx-api-v1-swagger-cloudformation.json'
