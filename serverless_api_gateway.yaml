@@ -16,7 +16,7 @@ Resources:
         Api1:
           Type: Api
           Properties:
-            Path: '/clincx/v1/user/{field}'
+            Path: '/clincx/v1/admin/flowstatus'
             Method: POST
       VpcConfig:
         SecurityGroupIds:
