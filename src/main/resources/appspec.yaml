@@ -1,5 +1,4 @@
 ﻿AWSTemplateFormatVersion: '2010-09-09'
-Transform: 'AWS::Serverless-2016-10-31'
 Description: An AWS Serverless Specification template describing your function.
 Resources:
   serverlessuser:
@@ -7,17 +6,12 @@ Resources:
     Properties:
       Handler: 'com.test.api.admin.user.User::handleRequest'
       Runtime: java8
-      CodeUri: 's3://ghx-deployment-or/Clinical-Connexion/api-gateway-lambda/smi/serverless_app/serverless-app-0.0.1-SNAPSHOT.jar'
+      FunctionName: serverless_user_java
+      CodeUri: 's3://ghx-deployment-or/serverless-app-poc/serverless_app/serverless-app-0.0.1-SNAPSHOT.jar'
       Description: ''
       MemorySize: 512
       Timeout: 300
       Role: 'arn:aws:iam::050190852521:role/lambda_s3_vpc_execution'
-      Events:
-        Api1:
-          Type: Api
-          Properties:
-            Path: '/clincx/v1/admin/flowstatus'
-            Method: POST
       VpcConfig:
         SecurityGroupIds:
           - sg-c58bdfb8
@@ -29,4 +23,4 @@ Resources:
    Type: AWS::Serverless::Api
    Properties:
       StageName: dev
-      DefinitionUri: 's3://ghx-deployment-or/Clinical-Connexion/api-gateway-lambda/smi/serverless_app/clincx-api-v1-swagger-cloudformation.json'
+      DefinitionUri: 's3://ghx-deployment-or/serverless-app-poc/serverless_app_swagger.json'
