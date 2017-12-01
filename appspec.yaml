@@ -24,6 +24,6 @@ Resources:
    Type: AWS::Serverless::Api
    Properties:
       StageName: dev
-      DefinitionUri: 's3://ghx-deployment-or/serverless-app-poc/serverless_app/serverless_app_swagger.json'
+      DefinitionUri: 's3://ghx-deployment-or/serverless-app-poc/serverless_app/serverless_app_swagger.yaml'
       Variables:
         ServerlessExpressLambdaFunctionName: !Ref serverlessuser
