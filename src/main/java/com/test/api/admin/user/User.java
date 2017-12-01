@@ -25,9 +25,9 @@ public class User implements RequestStreamHandler {
 	private Map<String, Object> getAllUsers() {
 		Map<String, Object> users = new HashMap<String, Object>();
 		users.put("id", "123");
-		users.put("firstName", "MyUser");
-		users.put("lastName", "SystemAdmin");
-		users.put("userName", "sysadmin@test.com");
+		users.put("firstName", "My User");
+		users.put("lastName", "My Admin");
+		users.put("userName", "myadmin@test.com");
 		return users;
 	}
 }
