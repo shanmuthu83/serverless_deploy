@@ -7,7 +7,7 @@ Resources:
     Properties:
       Handler: 'com.test.api.admin.user.User::handleRequest'
       Runtime: java8
-      FunctionName: serverless_user_java
+      FunctionName: serverless_app_user_java
       CodeUri: 's3://ghx-deployment-or/serverless-app-poc/serverless_app/serverless-app-0.0.1-SNAPSHOT.jar'
       Description: ''
       MemorySize: 512
@@ -25,3 +25,5 @@ Resources:
    Properties:
       StageName: dev
       DefinitionUri: 's3://ghx-deployment-or/serverless-app-poc/serverless_app_swagger.json'
+      Variables:
+        ServerlessExpressLambdaFunctionName: !Ref serverlessuser
