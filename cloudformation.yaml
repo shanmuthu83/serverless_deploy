@@ -2,6 +2,11 @@
 Transform: AWS::Serverless-2016-10-31
 Description: An AWS Serverless Specification template describing your function.
 Resources:
+  serverlessapi:
+   Type: AWS::Serverless::Api
+   Properties:
+      StageName: dev
+      DefinitionUri: 's3://ghx-deployment-or/serverless-app-poc/serverless_app/serverless_app_swagger.yaml'
   serverlessuser:
     Type: 'AWS::Serverless::Function'
     Properties:
@@ -20,10 +25,3 @@ Resources:
           - subnet-72c7d206
           - subnet-821aefe7
           - subnet-3b192d7d
-  serverlessapi:
-   Type: AWS::Serverless::Api
-   Properties:
-      StageName: dev
-      DefinitionUri: 's3://ghx-deployment-or/serverless-app-poc/serverless_app/serverless_app_swagger.yaml'
-      Variables:
-        ServerlessExpressLambdaFunctionName: !Ref serverlessuser
