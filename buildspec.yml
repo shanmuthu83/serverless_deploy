@@ -12,6 +12,4 @@ artifacts:
   files:
     - serverless-app-0.0.1-SNAPSHOT.jar
     - new-cloudformation.yaml
-    - serverless_app_swagger.json
     - serverless_app_swagger.yaml
-    
