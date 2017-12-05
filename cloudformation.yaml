@@ -1,13 +1,98 @@
-﻿AWSTemplateFormatVersion: '2010-09-09'
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: An AWS Serverless Specification template describing your function.
 Resources:
-  serverlessapi:
+  ApiGatewayApi:
    Type: AWS::Serverless::Api
    Properties:
       StageName: dev
-      DefinitionUri: 's3://ghx-deployment-or/serverless-app-poc/serverless_app/serverless_app_swagger.yaml'
-  serverlessuser:
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          version: '1.0'
+          title: serverlessapi
+          description: Serverless API
+        schemes:
+        - https
+        paths:
+          "/clincx/v1/user":
+            get:
+              produces:
+              - application/json
+              responses:
+                '200':
+                  description: 200 response
+                  schema:
+                    "$ref": "#/definitions/Empty"
+              security:
+              - sso-authentication: []
+              x-amazon-apigateway-integration:
+                responses:
+                  default:
+                    statusCode: '200'
+                requestTemplates:
+                  application/json: |-
+                    {
+                        "stage": "$context.stage"
+                    }
+                uri:
+                  Fn::Join:
+                  - ''
+                  - - 'arn:aws:apigateway:'
+                    - Ref: AWS::Region
+                    - ":lambda:path/2015-03-31/functions/"
+                    - Fn::Join:
+                      - ''
+                      - - 'arn:aws:lambda:'
+                        - Ref: AWS::Region
+                        - ":"
+                        - Ref: AWS::AccountId
+                        - ":function:serverless_app_user_java"
+                    - "/invocations"
+                passthroughBehavior: when_no_match
+                httpMethod: POST
+                credentials:
+                  Fn::Join:
+                  - ''
+                  - - 'arn:aws:iam::'
+                    - Ref: AWS::AccountId
+                    - ":role/clincx-gateway-awsservices"
+                contentHandling: CONVERT_TO_TEXT
+                type: aws
+        securityDefinitions:
+          sso-authentication:
+            type: apiKey
+            name: Authorization
+            in: header
+            x-amazon-apigateway-authtype: custom
+            x-amazon-apigateway-authorizer:
+              authorizerUri:
+                Fn::Join:
+                - ''
+                - - 'arn:aws:apigateway:'
+                  - Ref: AWS::Region
+                  - ":lambda:path/2015-03-31/functions/"
+                  - Fn::Join:
+                    - ''
+                    - - 'arn:aws:lambda:'
+                      - Ref: AWS::Region
+                      - ":"
+                      - Ref: AWS::AccountId
+                      - ":function:clincx_sso"
+                  - "/invocations"
+              authorizerResultTtlInSeconds: 0
+              authorizerCredentials:
+                Fn::Join:
+                - ''
+                - - 'arn:aws:iam::'
+                  - Ref: AWS::AccountId
+                  - ":role/clincx-gateway-awsservices"
+              type: token
+        definitions:
+          Empty:
+            type: object
+            title: Empty Schema        
+  LambdaFunction:
     Type: 'AWS::Serverless::Function'
     Properties:
       Handler: 'com.test.api.admin.user.User::handleRequest'
