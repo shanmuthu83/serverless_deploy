@@ -1,11 +1,27 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: An AWS Serverless Specification template describing your function.
+Parameters:
+  StageName:
+    Type: String
+    Default: dev
+Mappings:
+  RegionMap:
+    us-west-2:
+      S3Bucket: ghx-deployment-or
+      S3Key: serverless-app-poc/serverless_app/serverless-app-0.0.1-SNAPSHOT.jar
+      role: lambda_s3_vpc_execution
+      SecurityGroupIds:
+      - sg-06f6e964
+      SubnetIds:
+      - subnet-72c7d206
+      - subnet-3b192d7d
+      - subnet-821aefe7
 Resources:
   ApiGatewayApi:
    Type: AWS::Serverless::Api
    Properties:
-      StageName: dev
+      StageName: !Ref StageName
       DefinitionBody:
         swagger: '2.0'
         info:
@@ -91,22 +107,45 @@ Resources:
         definitions:
           Empty:
             type: object
-            title: Empty Schema        
+            title: Empty Schema          
   LambdaFunction:
-    Type: 'AWS::Serverless::Function'
+    Type: AWS::Lambda::Function
     Properties:
-      Handler: 'com.test.api.admin.user.User::handleRequest'
-      Runtime: java8
+      Code:
+        S3Bucket:
+          Fn::FindInMap:
+          - RegionMap
+          - Ref: AWS::Region
+          - S3Bucket
+        S3Key:
+          Fn::FindInMap:
+          - RegionMap
+          - Ref: AWS::Region
+          - S3Key
+      Description: 'Return all users'
       FunctionName: serverless_app_user_java
-      CodeUri: 's3://ghx-deployment-or/serverless-app-poc/serverless_app/serverless-app-0.0.1-SNAPSHOT.jar'
-      Description: ''
+      Handler: com.test.api.admin.user.User::handleRequest
       MemorySize: 512
-      Timeout: 300
-      Role: 'arn:aws:iam::050190852521:role/lambda_s3_vpc_execution'
+      Role:
+        Fn::Join:
+        - ''
+        - - 'arn:aws:iam::'
+          - Ref: AWS::AccountId
+          - ":role/"
+          - Fn::FindInMap:
+            - RegionMap
+            - Ref: AWS::Region
+            - role
+      Runtime: java8
+      Timeout: '120'
       VpcConfig:
         SecurityGroupIds:
-          - sg-c58bdfb8
+          Fn::FindInMap:
+          - RegionMap
+          - Ref: AWS::Region
+          - SecurityGroupIds
         SubnetIds:
-          - subnet-72c7d206
-          - subnet-821aefe7
-          - subnet-3b192d7d
+          Fn::FindInMap:
+          - RegionMap
+          - Ref: AWS::Region
+          - SubnetIds
