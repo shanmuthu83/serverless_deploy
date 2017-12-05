@@ -1,12 +1,12 @@
 version: 0.2
 phases:
-  install:
-    commands:
-       - aws cloudformation package --template-file ./cloudformation.yaml --s3-bucket ghx-deployment-or/serverless-app-poc/ --output-template-file new-cloudformation.yaml
   build:
     commands:
       - mvn clean install
       - mv target/serverless-app-0.0.1-SNAPSHOT.jar serverless-app-0.0.1-SNAPSHOT.jar
+  post_build:
+    commands:
+      - aws cloudformation package --template-file ./cloudformation.yaml --s3-bucket ghx-deployment-or/serverless-app-poc/ --output-template-file new-cloudformation.yaml
 artifacts:
   files:
     - serverless-app-0.0.1-SNAPSHOT.jar
