@@ -15,7 +15,7 @@ Mappings:
   RegionMap:
     us-west-2:
       S3Bucket: ghx-deployment-or
-      S3Key: serverless-app-poc/serverless_app/serverless-app-0.0.1-SNAPSHOT.jar
+      S3Key: cc_serverless/cc_serverless/serverless-app-0.0.1-SNAPSHOT.jar
       role: lambda_s3_vpc_execution
 Resources:
   ApiGatewayApi:
