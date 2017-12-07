@@ -17,12 +17,6 @@ Mappings:
       S3Bucket: ghx-deployment-or
       S3Key: serverless-app-poc/serverless_app/serverless-app-0.0.1-SNAPSHOT.jar
       role: lambda_s3_vpc_execution
-      SecurityGroupIds:
-      - sg-06f6e964
-      SubnetIds:
-      - subnet-72c7d206
-      - subnet-3b192d7d
-      - subnet-821aefe7
 Resources:
   ApiGatewayApi:
    Type: AWS::Serverless::Api
@@ -144,14 +138,3 @@ Resources:
             - role
       Runtime: java8
       Timeout: '120'
-      VpcConfig:
-        SecurityGroupIds:
-          Fn::FindInMap:
-          - RegionMap
-          - Ref: AWS::Region
-          - SecurityGroupIds
-        SubnetIds:
-          Fn::FindInMap:
-          - RegionMap
-          - Ref: AWS::Region
-          - SubnetIds
