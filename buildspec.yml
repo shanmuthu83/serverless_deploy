@@ -8,3 +8,4 @@ artifacts:
   files:
     - serverless-app-0.0.1-SNAPSHOT.jar
     - cloudformation.yaml
+  discard-paths: yes
